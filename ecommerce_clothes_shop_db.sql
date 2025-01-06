@@ -29,7 +29,7 @@ DELIMITER $$
 -- Procedury
 --
 DROP PROCEDURE IF EXISTS `add_billing_details`$$
-CREATE DEFINER=`judka_damian`@`%` PROCEDURE `add_billing_details` (IN `id_customer` BIGINT(20), IN `id_provider` BIGINT(20), IN `address_title` VARCHAR(255), IN `f_name` VARCHAR(100), IN `l_name` VARCHAR(100), IN `p_email` VARCHAR(255), IN `p_phone_number` VARCHAR(20), OUT `id_billing` BIGINT(20) UNSIGNED)  SQL SECURITY INVOKER COMMENT 'Tworzy nowy wpis w szczegółach płatności' BEGIN
+CREATE  PROCEDURE `add_billing_details` (IN `id_customer` BIGINT(20), IN `id_provider` BIGINT(20), IN `address_title` VARCHAR(255), IN `f_name` VARCHAR(100), IN `l_name` VARCHAR(100), IN `p_email` VARCHAR(255), IN `p_phone_number` VARCHAR(20), OUT `id_billing` BIGINT(20) UNSIGNED)  SQL SECURITY INVOKER COMMENT 'Tworzy nowy wpis w szczegółach płatności' BEGIN
 	DECLARE id_address BIGINT;
 
 	IF address_title IS NOT NULL AND LENGTH(address_title) > 0 THEN
@@ -48,7 +48,7 @@ CREATE DEFINER=`judka_damian`@`%` PROCEDURE `add_billing_details` (IN `id_custom
 END$$
 
 DROP PROCEDURE IF EXISTS `add_customer`$$
-CREATE DEFINER=`judka_damian`@`%` PROCEDURE `add_customer` (IN `f_name` VARCHAR(100), IN `l_name` VARCHAR(100))  SQL SECURITY INVOKER BEGIN
+CREATE  PROCEDURE `add_customer` (IN `f_name` VARCHAR(100), IN `l_name` VARCHAR(100))  SQL SECURITY INVOKER BEGIN
 	SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
     START TRANSACTION;
     
@@ -72,7 +72,7 @@ CREATE DEFINER=`judka_damian`@`%` PROCEDURE `add_customer` (IN `f_name` VARCHAR(
 END$$
 
 DROP PROCEDURE IF EXISTS `add_invoice_lines`$$
-CREATE DEFINER=`judka_damian`@`%` PROCEDURE `add_invoice_lines` (IN `id_invoice` BIGINT(20) UNSIGNED, IN `id_order` BIGINT(20) UNSIGNED)  SQL SECURITY INVOKER BEGIN
+CREATE  PROCEDURE `add_invoice_lines` (IN `id_invoice` BIGINT(20) UNSIGNED, IN `id_order` BIGINT(20) UNSIGNED)  SQL SECURITY INVOKER BEGIN
 	DECLARE finished INT DEFAULT FALSE;
     DECLARE id_product BIGINT;
     DECLARE product_quantity INT;
@@ -109,7 +109,7 @@ CREATE DEFINER=`judka_damian`@`%` PROCEDURE `add_invoice_lines` (IN `id_invoice`
 END$$
 
 DROP PROCEDURE IF EXISTS `add_login_log`$$
-CREATE DEFINER=`judka_damian`@`%` PROCEDURE `add_login_log` (IN `user_type` ENUM('user','customer'), IN `id_user` BIGINT(20) UNSIGNED, IN `action_type` ENUM('add_to_cart','add_order'))  SQL SECURITY INVOKER BEGIN
+CREATE  PROCEDURE `add_login_log` (IN `user_type` ENUM('user','customer'), IN `id_user` BIGINT(20) UNSIGNED, IN `action_type` ENUM('add_to_cart','add_order'))  SQL SECURITY INVOKER BEGIN
 
 	DECLARE ip VARCHAR(15);
     DECLARE ug VARCHAR(255);
@@ -162,7 +162,7 @@ CREATE DEFINER=`judka_damian`@`%` PROCEDURE `add_login_log` (IN `user_type` ENUM
 END$$
 
 DROP PROCEDURE IF EXISTS `add_order`$$
-CREATE DEFINER=`judka_damian`@`%` PROCEDURE `add_order` (IN `id_customer` BIGINT(20) UNSIGNED, IN `id_billing_provider` BIGINT(20) UNSIGNED, IN `id_shipping_provider` BIGINT(20) UNSIGNED, IN `address_title` VARCHAR(255))   BEGIN
+CREATE  PROCEDURE `add_order` (IN `id_customer` BIGINT(20) UNSIGNED, IN `id_billing_provider` BIGINT(20) UNSIGNED, IN `id_shipping_provider` BIGINT(20) UNSIGNED, IN `address_title` VARCHAR(255))   BEGIN
     DECLARE error_message TEXT;
     DECLARE id_cart INT;
     DECLARE id_product BIGINT;
@@ -244,7 +244,7 @@ CREATE DEFINER=`judka_damian`@`%` PROCEDURE `add_order` (IN `id_customer` BIGINT
 END$$
 
 DROP PROCEDURE IF EXISTS `add_product_to_cart`$$
-CREATE DEFINER=`judka_damian`@`%` PROCEDURE `add_product_to_cart` (IN `id_product` BIGINT UNSIGNED, IN `product_quantity` INT UNSIGNED, IN `id_customer` BIGINT UNSIGNED)   BEGIN
+CREATE  PROCEDURE `add_product_to_cart` (IN `id_product` BIGINT UNSIGNED, IN `product_quantity` INT UNSIGNED, IN `id_customer` BIGINT UNSIGNED)   BEGIN
     DECLARE id_cart INT;
     DECLARE id_item INT;
     DECLARE cart_status INT;
@@ -302,13 +302,24 @@ CREATE DEFINER=`judka_damian`@`%` PROCEDURE `add_product_to_cart` (IN `id_produc
 END$$
 
 DROP PROCEDURE IF EXISTS `add_role_permission`$$
-$$
+CREATE PROCEDURE `add_role_permission`(IN `p_role_id` int, IN `p_permission_id` int)
+begin 
+  if not exists (select 1 from role_permission where role_id = p_role_id and permission_id = p_permission_id) then
+    insert into role_permission (role_id, permission_id) values (p_role_id, p_permission_id);
+  end if;
+  
+end$$
 
 DROP PROCEDURE IF EXISTS `add_role_user`$$
-$$
+CREATE PROCEDURE `add_role_user`(in `p_user_id` int, in `p_role_id` int)
+begin 
+
+  update role_user set role_id = p_role_id where user_id = p_user_id;
+  
+end$$
 
 DROP PROCEDURE IF EXISTS `add_shipping_details`$$
-CREATE DEFINER=`judka_damian`@`%` PROCEDURE `add_shipping_details` (IN `id_customer` BIGINT(20) UNSIGNED, IN `id_provider` BIGINT(20) UNSIGNED, IN `address_title` VARCHAR(255), IN `f_name` VARCHAR(100), IN `l_name` VARCHAR(100), IN `address_1` VARCHAR(100), IN `address_2` VARCHAR(100), IN `p_email` VARCHAR(255), IN `p_country` CHAR(2), IN `p_city` VARCHAR(255), IN `p_state` VARCHAR(255), IN `p_postal_code` VARCHAR(12), IN `p_phone_number` VARCHAR(20), OUT `id_shipping` BIGINT(20) UNSIGNED)   BEGIN
+CREATE  PROCEDURE `add_shipping_details` (IN `id_customer` BIGINT(20) UNSIGNED, IN `id_provider` BIGINT(20) UNSIGNED, IN `address_title` VARCHAR(255), IN `f_name` VARCHAR(100), IN `l_name` VARCHAR(100), IN `address_1` VARCHAR(100), IN `address_2` VARCHAR(100), IN `p_email` VARCHAR(255), IN `p_country` CHAR(2), IN `p_city` VARCHAR(255), IN `p_state` VARCHAR(255), IN `p_postal_code` VARCHAR(12), IN `p_phone_number` VARCHAR(20), OUT `id_shipping` BIGINT(20) UNSIGNED)   BEGIN
 	DECLARE id_address BIGINT;
 
 	IF address_title IS NOT NULL AND LENGTH(address_title) > 0 THEN
@@ -335,7 +346,7 @@ CREATE DEFINER=`judka_damian`@`%` PROCEDURE `add_shipping_details` (IN `id_custo
 END$$
 
 DROP PROCEDURE IF EXISTS `add_user`$$
-CREATE DEFINER=`judka_damian`@`%` PROCEDURE `add_user` (IN `f_name` VARCHAR(100), IN `l_name` VARCHAR(100))  SQL SECURITY INVOKER BEGIN
+CREATE  PROCEDURE `add_user` (IN `f_name` VARCHAR(100), IN `l_name` VARCHAR(100))  SQL SECURITY INVOKER BEGIN
 	SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
     START TRANSACTION;
     
@@ -357,7 +368,7 @@ CREATE DEFINER=`judka_damian`@`%` PROCEDURE `add_user` (IN `f_name` VARCHAR(100)
 END$$
 
 DROP PROCEDURE IF EXISTS `cancel_order`$$
-CREATE DEFINER=`judka_damian`@`%` PROCEDURE `cancel_order` (IN `id_order` BIGINT(20) UNSIGNED)   BEGIN
+CREATE  PROCEDURE `cancel_order` (IN `id_order` BIGINT(20) UNSIGNED)   BEGIN
 	DECLARE error_message TEXT;
     DECLARE id_cart BIGINT;
     DECLARE order_status ENUM('placed', 'paid', 'ready_to_ship', 'shipped');
@@ -391,7 +402,7 @@ CREATE DEFINER=`judka_damian`@`%` PROCEDURE `cancel_order` (IN `id_order` BIGINT
 END$$
 
 DROP PROCEDURE IF EXISTS `change_stock_level`$$
-CREATE DEFINER=`judka_damian`@`%` PROCEDURE `change_stock_level` (IN `id_order` BIGINT(20) UNSIGNED, IN `id_cart` BIGINT(20) UNSIGNED, IN `event_name` ENUM('snapshot','stock_increased','stock_decreased','order_placed','order_dispatched','order_cancelled','returned'))  SQL SECURITY INVOKER BEGIN
+CREATE  PROCEDURE `change_stock_level` (IN `id_order` BIGINT(20) UNSIGNED, IN `id_cart` BIGINT(20) UNSIGNED, IN `event_name` ENUM('snapshot','stock_increased','stock_decreased','order_placed','order_dispatched','order_cancelled','returned'))  SQL SECURITY INVOKER BEGIN
 	DECLARE done INT DEFAULT FALSE;
     DECLARE id_product BIGINT;
     DECLARE product_quantity INT;
@@ -417,7 +428,7 @@ CREATE DEFINER=`judka_damian`@`%` PROCEDURE `change_stock_level` (IN `id_order` 
 END$$
 
 DROP PROCEDURE IF EXISTS `delete_product_from_cart`$$
-CREATE DEFINER=`judka_damian`@`%` PROCEDURE `delete_product_from_cart` (IN `id_customer` BIGINT(20) UNSIGNED, IN `id_product` BIGINT(20) UNSIGNED)   BEGIN
+CREATE  PROCEDURE `delete_product_from_cart` (IN `id_customer` BIGINT(20) UNSIGNED, IN `id_product` BIGINT(20) UNSIGNED)   BEGIN
 	DECLARE id_cart BIGINT;
     DECLARE error_message TEXT;
     
@@ -452,10 +463,15 @@ CREATE DEFINER=`judka_damian`@`%` PROCEDURE `delete_product_from_cart` (IN `id_c
 END$$
 
 DROP PROCEDURE IF EXISTS `increase_quantity`$$
-$$
+CREATE PROCEDURE `increase_quantity`(IN `p_product_id` int, `p_quantity` int)
+begin 
+  if exists (select 1 from stock_events where product_id = p_product_id and event_type = "snapshot") then
+    insert into stock_events (product_id, diff, event_type) values (p_product_id, p_quantity, "stock_increased");
+  end if;
+end$$
 
 DROP PROCEDURE IF EXISTS `pay_order`$$
-CREATE DEFINER=`judka_damian`@`%` PROCEDURE `pay_order` (IN `id_order` BIGINT(20) UNSIGNED)   BEGIN
+CREATE  PROCEDURE `pay_order` (IN `id_order` BIGINT(20) UNSIGNED)   BEGIN
 	
     DECLARE transaction_id VARCHAR(50);
     DECLARE total_net_value INT;
@@ -502,7 +518,7 @@ CREATE DEFINER=`judka_damian`@`%` PROCEDURE `pay_order` (IN `id_order` BIGINT(20
 END$$
 
 DROP PROCEDURE IF EXISTS `prepare_order_shipment`$$
-CREATE DEFINER=`judka_damian`@`%` PROCEDURE `prepare_order_shipment` (IN `id_order` BIGINT(20) UNSIGNED)   BEGIN
+CREATE  PROCEDURE `prepare_order_shipment` (IN `id_order` BIGINT(20) UNSIGNED)   BEGIN
 
 	DECLARE error_message TEXT;
     DECLARE id_details BIGINT;
@@ -543,7 +559,7 @@ CREATE DEFINER=`judka_damian`@`%` PROCEDURE `prepare_order_shipment` (IN `id_ord
 END$$
 
 DROP PROCEDURE IF EXISTS `return_order`$$
-CREATE DEFINER=`judka_damian`@`%` PROCEDURE `return_order` (IN `id_order` BIGINT(20) UNSIGNED)   BEGIN
+CREATE  PROCEDURE `return_order` (IN `id_order` BIGINT(20) UNSIGNED)   BEGIN
 
 	DECLARE error_message TEXT;
     DECLARE id_cart BIGINT;
@@ -579,7 +595,7 @@ CREATE DEFINER=`judka_damian`@`%` PROCEDURE `return_order` (IN `id_order` BIGINT
 END$$
 
 DROP PROCEDURE IF EXISTS `ship_order`$$
-CREATE DEFINER=`judka_damian`@`%` PROCEDURE `ship_order` (IN `id_order` BIGINT(20) UNSIGNED)   BEGIN
+CREATE  PROCEDURE `ship_order` (IN `id_order` BIGINT(20) UNSIGNED)   BEGIN
 
 	DECLARE order_status ENUM('placed', 'paid', 'ready_to_ship', 'shipped');
 	DECLARE error_message TEXT;
@@ -618,7 +634,7 @@ END$$
 -- Functions
 --
 DROP FUNCTION IF EXISTS `calculate_cart_total_value`$$
-CREATE DEFINER=`judka_damian`@`%` FUNCTION `calculate_cart_total_value` (`id_order` BIGINT(20) UNSIGNED, `is_gross` BOOLEAN) RETURNS INT(10) UNSIGNED SQL SECURITY INVOKER BEGIN
+CREATE  FUNCTION `calculate_cart_total_value` (`id_order` BIGINT(20) UNSIGNED, `is_gross` BOOLEAN) RETURNS INT(10) UNSIGNED SQL SECURITY INVOKER BEGIN
 	DECLARE finished INT DEFAULT FALSE;
     DECLARE id_product BIGINT;
     DECLARE product_quantity INT;
@@ -660,7 +676,7 @@ CREATE DEFINER=`judka_damian`@`%` FUNCTION `calculate_cart_total_value` (`id_ord
 END$$
 
 DROP FUNCTION IF EXISTS `check_billing_details`$$
-CREATE DEFINER=`judka_damian`@`%` FUNCTION `check_billing_details` (`id_provider` BIGINT(20) UNSIGNED, `f_name` VARCHAR(100), `l_name` VARCHAR(100), `p_email` VARCHAR(255), `p_phone_number` VARCHAR(20)) RETURNS BIGINT(20) UNSIGNED  BEGIN
+CREATE  FUNCTION `check_billing_details` (`id_provider` BIGINT(20) UNSIGNED, `f_name` VARCHAR(100), `l_name` VARCHAR(100), `p_email` VARCHAR(255), `p_phone_number` VARCHAR(20)) RETURNS BIGINT(20) UNSIGNED  BEGIN
 	DECLARE existing_id BIGINT DEFAULT 0;
     
 	SELECT billing_details_id
@@ -676,7 +692,7 @@ CREATE DEFINER=`judka_damian`@`%` FUNCTION `check_billing_details` (`id_provider
 END$$
 
 DROP FUNCTION IF EXISTS `check_sellable_product_quantity`$$
-CREATE DEFINER=`judka_damian`@`%` FUNCTION `check_sellable_product_quantity` (`id_cart` BIGINT(20) UNSIGNED) RETURNS TINYINT(3) UNSIGNED  BEGIN
+CREATE  FUNCTION `check_sellable_product_quantity` (`id_cart` BIGINT(20) UNSIGNED) RETURNS TINYINT(3) UNSIGNED  BEGIN
 	DECLARE finished INT DEFAULT FALSE;
     DECLARE id_product BIGINT;
     DECLARE cart_quantity INT;
@@ -708,7 +724,7 @@ CREATE DEFINER=`judka_damian`@`%` FUNCTION `check_sellable_product_quantity` (`i
 END$$
 
 DROP FUNCTION IF EXISTS `check_shipping_details`$$
-CREATE DEFINER=`judka_damian`@`%` FUNCTION `check_shipping_details` (`id_provider` BIGINT(20) UNSIGNED, `f_name` VARCHAR(100), `l_name` VARCHAR(100), `address_1` VARCHAR(100), `address_2` VARCHAR(100), `p_email` VARCHAR(255), `p_country` CHAR(2), `p_city` VARCHAR(255), `p_state` VARCHAR(255), `p_postal_code` VARCHAR(12), `p_phone_number` VARCHAR(20)) RETURNS BIGINT(20) UNSIGNED  BEGIN
+CREATE  FUNCTION `check_shipping_details` (`id_provider` BIGINT(20) UNSIGNED, `f_name` VARCHAR(100), `l_name` VARCHAR(100), `address_1` VARCHAR(100), `address_2` VARCHAR(100), `p_email` VARCHAR(255), `p_country` CHAR(2), `p_city` VARCHAR(255), `p_state` VARCHAR(255), `p_postal_code` VARCHAR(12), `p_phone_number` VARCHAR(20)) RETURNS BIGINT(20) UNSIGNED  BEGIN
 	DECLARE existing_id BIGINT DEFAULT 0;
     
 	SELECT shipping_details_id
@@ -730,7 +746,7 @@ CREATE DEFINER=`judka_damian`@`%` FUNCTION `check_shipping_details` (`id_provide
 END$$
 
 DROP FUNCTION IF EXISTS `generate_email`$$
-CREATE DEFINER=`judka_damian`@`%` FUNCTION `generate_email` (`first_name` VARCHAR(100), `last_name` VARCHAR(100)) RETURNS VARCHAR(255) CHARSET utf8mb4 COLLATE utf8mb4_general_ci  BEGIN
+CREATE  FUNCTION `generate_email` (`first_name` VARCHAR(100), `last_name` VARCHAR(100)) RETURNS VARCHAR(255) CHARSET utf8mb4 COLLATE utf8mb4_general_ci  BEGIN
 DECLARE random_number INT(5);
 SET random_number = RAND() * 9999 + 1;
 
@@ -741,14 +757,14 @@ RETURN CONCAT(first_name, ".", last_name, random_number, '@gmail.com');
 END$$
 
 DROP FUNCTION IF EXISTS `generate_random_date`$$
-CREATE DEFINER=`judka_damian`@`%` FUNCTION `generate_random_date` (`start_date` DATE, `end_date` DATE) RETURNS DATE  BEGIN
+CREATE  FUNCTION `generate_random_date` (`start_date` DATE, `end_date` DATE) RETURNS DATE  BEGIN
 	RETURN FROM_UNIXTIME(
         UNIX_TIMESTAMP(start_date) +
         FLOOR(RAND() * (UNIX_TIMESTAMP(end_date)- UNIX_TIMESTAMP(start_date))));
 END$$
 
 DROP FUNCTION IF EXISTS `generate_random_hashed_password`$$
-CREATE DEFINER=`judka_damian`@`%` FUNCTION `generate_random_hashed_password` () RETURNS VARCHAR(64) CHARSET utf8mb4 COLLATE utf8mb4_general_ci  BEGIN	
+CREATE  FUNCTION `generate_random_hashed_password` () RETURNS VARCHAR(64) CHARSET utf8mb4 COLLATE utf8mb4_general_ci  BEGIN	
     DECLARE char_pool VARCHAR(64) DEFAULT "QWERTYUIOPASDFGHJKLZXCVBNM1234567890!@#$%^&*(),.?/<>";
     DECLARE pool_length INT DEFAULT LENGTH(char_pool);
     DECLARE loop_count INT DEFAULT 0;
@@ -766,7 +782,7 @@ CREATE DEFINER=`judka_damian`@`%` FUNCTION `generate_random_hashed_password` () 
 END$$
 
 DROP FUNCTION IF EXISTS `generate_random_ip`$$
-CREATE DEFINER=`judka_damian`@`%` FUNCTION `generate_random_ip` () RETURNS VARCHAR(15) CHARSET utf8mb4 COLLATE utf8mb4_general_ci  BEGIN
+CREATE  FUNCTION `generate_random_ip` () RETURNS VARCHAR(15) CHARSET utf8mb4 COLLATE utf8mb4_general_ci  BEGIN
 
 	DECLARE ip_address VARCHAR(15) DEFAULT '';
     
@@ -781,12 +797,12 @@ CREATE DEFINER=`judka_damian`@`%` FUNCTION `generate_random_ip` () RETURNS VARCH
 END$$
 
 DROP FUNCTION IF EXISTS `generate_random_number`$$
-CREATE DEFINER=`judka_damian`@`%` FUNCTION `generate_random_number` (`start_number` INT(11) UNSIGNED, `end_number` INT(11) UNSIGNED) RETURNS INT(11)  BEGIN
+CREATE  FUNCTION `generate_random_number` (`start_number` INT(11) UNSIGNED, `end_number` INT(11) UNSIGNED) RETURNS INT(11)  BEGIN
 RETURN FLOOR(RAND() * (end_number - start_number + 1)) + start_number;
 END$$
 
 DROP FUNCTION IF EXISTS `generate_random_user_agent`$$
-CREATE DEFINER=`judka_damian`@`%` FUNCTION `generate_random_user_agent` () RETURNS VARCHAR(255) CHARSET utf8mb4 COLLATE utf8mb4_general_ci  BEGIN
+CREATE  FUNCTION `generate_random_user_agent` () RETURNS VARCHAR(255) CHARSET utf8mb4 COLLATE utf8mb4_general_ci  BEGIN
 	DECLARE user_agent VARCHAR(255);
 	DECLARE browser VARCHAR(50);
     DECLARE browser_version VARCHAR(20);
@@ -807,7 +823,7 @@ CREATE DEFINER=`judka_damian`@`%` FUNCTION `generate_random_user_agent` () RETUR
 END$$
 
 DROP FUNCTION IF EXISTS `generate_tracking_url`$$
-CREATE DEFINER=`judka_damian`@`%` FUNCTION `generate_tracking_url` (`shipping_details_id` BIGINT(20) UNSIGNED) RETURNS VARCHAR(255) CHARSET utf8mb4 COLLATE utf8mb4_general_ci  BEGIN
+CREATE  FUNCTION `generate_tracking_url` (`shipping_details_id` BIGINT(20) UNSIGNED) RETURNS VARCHAR(255) CHARSET utf8mb4 COLLATE utf8mb4_general_ci  BEGIN
 	DECLARE tracking_url VARCHAR(255);
     DECLARE destination_country CHAR(2);
     DECLARE shipping_provider_id BIGINT;
@@ -881,7 +897,7 @@ CREATE DEFINER=`judka_damian`@`%` FUNCTION `generate_tracking_url` (`shipping_de
 END$$
 
 DROP FUNCTION IF EXISTS `generate_transaction_id`$$
-CREATE DEFINER=`judka_damian`@`%` FUNCTION `generate_transaction_id` (`id_order` BIGINT(20) UNSIGNED) RETURNS VARCHAR(50) CHARSET utf8mb4 COLLATE utf8mb4_general_ci SQL SECURITY INVOKER BEGIN
+CREATE  FUNCTION `generate_transaction_id` (`id_order` BIGINT(20) UNSIGNED) RETURNS VARCHAR(50) CHARSET utf8mb4 COLLATE utf8mb4_general_ci SQL SECURITY INVOKER BEGIN
 	DECLARE transaction_id VARCHAR(50);
     DECLARE provider_id INT;
     
@@ -923,7 +939,7 @@ CREATE DEFINER=`judka_damian`@`%` FUNCTION `generate_transaction_id` (`id_order`
 END$$
 
 DROP FUNCTION IF EXISTS `remove_diacritics`$$
-CREATE DEFINER=`judka_damian`@`%` FUNCTION `remove_diacritics` (`input_text` VARCHAR(255)) RETURNS VARCHAR(255) CHARSET utf8mb4 COLLATE utf8mb4_general_ci  BEGIN
+CREATE  FUNCTION `remove_diacritics` (`input_text` VARCHAR(255)) RETURNS VARCHAR(255) CHARSET utf8mb4 COLLATE utf8mb4_general_ci  BEGIN
 	SET input_text = REPLACE(input_text, 'ą', 'a');
 	SET input_text = REPLACE(input_text, 'ć', 'c');
 	SET input_text = REPLACE(input_text, 'ę', 'e');
@@ -2461,7 +2477,7 @@ CREATE TABLE IF NOT EXISTS `v_user_IDs` (
 DROP TABLE IF EXISTS `v_categories_tree`;
 
 DROP VIEW IF EXISTS `v_categories_tree`;
-CREATE OR REPLACE ALGORITHM=UNDEFINED DEFINER=`judka_damian`@`%` SQL SECURITY DEFINER VIEW `v_categories_tree`  AS SELECT `c1`.`category_name` AS `lev1`, `c2`.`category_name` AS `lev2`, `c3`.`category_name` AS `lev3`, `c4`.`category_name` AS `lev4`, `c5`.`category_name` AS `lev5` FROM ((((`categories` `c1` left join `categories` `c2` on(`c2`.`parent_id` = `c1`.`category_id`)) left join `categories` `c3` on(`c3`.`parent_id` = `c2`.`category_id`)) left join `categories` `c4` on(`c4`.`parent_id` = `c3`.`category_id`)) left join `categories` `c5` on(`c5`.`parent_id` = `c4`.`category_id`)) WHERE `c1`.`category_name` = 'Zakupy' ;
+CREATE OR REPLACE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_categories_tree`  AS SELECT `c1`.`category_name` AS `lev1`, `c2`.`category_name` AS `lev2`, `c3`.`category_name` AS `lev3`, `c4`.`category_name` AS `lev4`, `c5`.`category_name` AS `lev5` FROM ((((`categories` `c1` left join `categories` `c2` on(`c2`.`parent_id` = `c1`.`category_id`)) left join `categories` `c3` on(`c3`.`parent_id` = `c2`.`category_id`)) left join `categories` `c4` on(`c4`.`parent_id` = `c3`.`category_id`)) left join `categories` `c5` on(`c5`.`parent_id` = `c4`.`category_id`)) WHERE `c1`.`category_name` = 'Zakupy' ;
 
 -- --------------------------------------------------------
 
@@ -2471,7 +2487,7 @@ CREATE OR REPLACE ALGORITHM=UNDEFINED DEFINER=`judka_damian`@`%` SQL SECURITY DE
 DROP TABLE IF EXISTS `v_customer_orders`;
 
 DROP VIEW IF EXISTS `v_customer_orders`;
-CREATE OR REPLACE ALGORITHM=UNDEFINED DEFINER=`judka_damian`@`%` SQL SECURITY DEFINER VIEW `v_customer_orders`  AS SELECT `c`.`first_name` AS `CustomerName`, `c`.`last_name` AS `CustomerSurname`, `o`.`order_id` AS `OrderID`, `o`.`status` AS `OrderStatus`, `o`.`created_at` AS `OrderCreateTime`, `o`.`updated_at` AS `OrderUpdateTime` FROM (`customers` `c` left join `orders` `o` on(`o`.`customer_id` = `c`.`customer_id`)) ORDER BY `o`.`updated_at` DESC ;
+CREATE OR REPLACE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_customer_orders`  AS SELECT `c`.`first_name` AS `CustomerName`, `c`.`last_name` AS `CustomerSurname`, `o`.`order_id` AS `OrderID`, `o`.`status` AS `OrderStatus`, `o`.`created_at` AS `OrderCreateTime`, `o`.`updated_at` AS `OrderUpdateTime` FROM (`customers` `c` left join `orders` `o` on(`o`.`customer_id` = `c`.`customer_id`)) ORDER BY `o`.`updated_at` DESC ;
 
 -- --------------------------------------------------------
 
@@ -2481,7 +2497,7 @@ CREATE OR REPLACE ALGORITHM=UNDEFINED DEFINER=`judka_damian`@`%` SQL SECURITY DE
 DROP TABLE IF EXISTS `v_inventory`;
 
 DROP VIEW IF EXISTS `v_inventory`;
-CREATE OR REPLACE ALGORITHM=UNDEFINED DEFINER=`judka_damian`@`%` SQL SECURITY DEFINER VIEW `v_inventory`  AS SELECT `se`.`product_id` AS `product_id`, `p`.`product_name` AS `product_name`, `p`.`summary` AS `short_description`, (select ifnull(sum(`se_inner`.`diff`),0) AS `sellable_quantity` from `stock_events` `se_inner` where `se_inner`.`event_type` in ('stock_increased','stock_decreased','order_placed','order_cancelled','returned') and `se_inner`.`product_id` = `se`.`product_id`) AS `sellable_quantity`, (select ifnull(sum(`se_inner`.`diff`),0) AS `sellable_quantity` from `stock_events` `se_inner` where `se_inner`.`event_type` in ('stock_increased','stock_decreased','order_dispatched','returned') and `se_inner`.`product_id` = `se`.`product_id`) AS `storage_quantity` FROM (`stock_events` `se` join `products` `p` on(`p`.`product_id` = `se`.`product_id`)) GROUP BY `p`.`product_id` ORDER BY `se`.`created_at` ASC ;
+CREATE OR REPLACE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_inventory`  AS SELECT `se`.`product_id` AS `product_id`, `p`.`product_name` AS `product_name`, `p`.`summary` AS `short_description`, (select ifnull(sum(`se_inner`.`diff`),0) AS `sellable_quantity` from `stock_events` `se_inner` where `se_inner`.`event_type` in ('stock_increased','stock_decreased','order_placed','order_cancelled','returned') and `se_inner`.`product_id` = `se`.`product_id`) AS `sellable_quantity`, (select ifnull(sum(`se_inner`.`diff`),0) AS `sellable_quantity` from `stock_events` `se_inner` where `se_inner`.`event_type` in ('stock_increased','stock_decreased','order_dispatched','returned') and `se_inner`.`product_id` = `se`.`product_id`) AS `storage_quantity` FROM (`stock_events` `se` join `products` `p` on(`p`.`product_id` = `se`.`product_id`)) GROUP BY `p`.`product_id` ORDER BY `se`.`created_at` ASC ;
 
 -- --------------------------------------------------------
 
@@ -2491,7 +2507,7 @@ CREATE OR REPLACE ALGORITHM=UNDEFINED DEFINER=`judka_damian`@`%` SQL SECURITY DE
 DROP TABLE IF EXISTS `v_order_details`;
 
 DROP VIEW IF EXISTS `v_order_details`;
-CREATE OR REPLACE ALGORITHM=UNDEFINED DEFINER=`judka_damian`@`%` SQL SECURITY DEFINER VIEW `v_order_details`  AS SELECT `o`.`order_id` AS `OrderID`, `vp`.`sku` AS `ProductSKU`, `ci`.`quantity` AS `Quantity`, `vp`.`net_price` AS `UnitPrice`, `vp`.`net_price`* `ci`.`quantity` AS `TotalCost` FROM (((`orders` `o` left join `cart` `ca` on(`o`.`cart_id` = `ca`.`cart_id`)) left join `cart_item` `ci` on(`ci`.`cart_id` = `ca`.`cart_id`)) join `v_product_details` `vp` on(`ci`.`product_id` = `vp`.`product_id`)) ORDER BY `o`.`updated_at` DESC ;
+CREATE OR REPLACE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_order_details`  AS SELECT `o`.`order_id` AS `OrderID`, `vp`.`sku` AS `ProductSKU`, `ci`.`quantity` AS `Quantity`, `vp`.`net_price` AS `UnitPrice`, `vp`.`net_price`* `ci`.`quantity` AS `TotalCost` FROM (((`orders` `o` left join `cart` `ca` on(`o`.`cart_id` = `ca`.`cart_id`)) left join `cart_item` `ci` on(`ci`.`cart_id` = `ca`.`cart_id`)) join `v_product_details` `vp` on(`ci`.`product_id` = `vp`.`product_id`)) ORDER BY `o`.`updated_at` DESC ;
 
 -- --------------------------------------------------------
 
@@ -2501,7 +2517,7 @@ CREATE OR REPLACE ALGORITHM=UNDEFINED DEFINER=`judka_damian`@`%` SQL SECURITY DE
 DROP TABLE IF EXISTS `v_permission_IDs`;
 
 DROP VIEW IF EXISTS `v_permission_IDs`;
-CREATE OR REPLACE ALGORITHM=UNDEFINED DEFINER=`judka_damian`@`%` SQL SECURITY DEFINER VIEW `v_permission_IDs`  AS SELECT `permissions`.`permission_id` AS `permission_id`, `permissions`.`ident` AS `identyfikator_uprawnienia` FROM `permissions` ORDER BY `permissions`.`permission_id` ASC;
+CREATE OR REPLACE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_permission_IDs`  AS SELECT `permissions`.`permission_id` AS `permission_id`, `permissions`.`ident` AS `identyfikator_uprawnienia` FROM `permissions` ORDER BY `permissions`.`permission_id` ASC;
 
 -- --------------------------------------------------------
 
@@ -2511,7 +2527,7 @@ CREATE OR REPLACE ALGORITHM=UNDEFINED DEFINER=`judka_damian`@`%` SQL SECURITY DE
 DROP TABLE IF EXISTS `v_product_details`;
 
 DROP VIEW IF EXISTS `v_product_details`;
-CREATE OR REPLACE ALGORITHM=UNDEFINED DEFINER=`judka_damian`@`%` SQL SECURITY DEFINER VIEW `v_product_details`  AS SELECT `p`.`product_id` AS `product_id`, `p2`.`product_name` AS `product_name`, round(`p`.`net_price` / 100,2) AS `net_price`, round(`p`.`net_price` * (1 + 0.01 * `p2`.`tax_class`) / 100,2) AS `gross_price`, `p`.`sku` AS `sku`, `p`.`type` AS `type` FROM (`products` `p2` left join `products` `p` on(`p`.`parent_id` = `p2`.`product_id`)) WHERE `p`.`type` = 'simple'union select `products`.`product_id` AS `product_id`,`products`.`product_name` AS `product_name`,round(`products`.`net_price` / 100,2) AS `net_price`,round(`products`.`net_price` * (1 + 0.01 * `products`.`tax_class`) / 100,2) AS `gross_price`,`products`.`sku` AS `sku`,`products`.`type` AS `type` from `products` where `products`.`type` = 'simple' and `products`.`product_name` is not null order by `product_id`  ;
+CREATE OR REPLACE ALGORITHM=UNDEFINED  SQL SECURITY DEFINER VIEW `v_product_details`  AS SELECT `p`.`product_id` AS `product_id`, `p2`.`product_name` AS `product_name`, round(`p`.`net_price` / 100,2) AS `net_price`, round(`p`.`net_price` * (1 + 0.01 * `p2`.`tax_class`) / 100,2) AS `gross_price`, `p`.`sku` AS `sku`, `p`.`type` AS `type` FROM (`products` `p2` left join `products` `p` on(`p`.`parent_id` = `p2`.`product_id`)) WHERE `p`.`type` = 'simple'union select `products`.`product_id` AS `product_id`,`products`.`product_name` AS `product_name`,round(`products`.`net_price` / 100,2) AS `net_price`,round(`products`.`net_price` * (1 + 0.01 * `products`.`tax_class`) / 100,2) AS `gross_price`,`products`.`sku` AS `sku`,`products`.`type` AS `type` from `products` where `products`.`type` = 'simple' and `products`.`product_name` is not null order by `product_id`  ;
 
 -- --------------------------------------------------------
 
@@ -2521,7 +2537,7 @@ CREATE OR REPLACE ALGORITHM=UNDEFINED DEFINER=`judka_damian`@`%` SQL SECURITY DE
 DROP TABLE IF EXISTS `v_role_IDs`;
 
 DROP VIEW IF EXISTS `v_role_IDs`;
-CREATE OR REPLACE ALGORITHM=UNDEFINED DEFINER=`gumulak_kacper`@`%` SQL SECURITY DEFINER VIEW `v_role_IDs`  AS SELECT `roles`.`role_id` AS `role_id`, `roles`.`label` AS `label` FROM `roles` ORDER BY `roles`.`role_id` ASC ;
+CREATE OR REPLACE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_role_IDs`  AS SELECT `roles`.`role_id` AS `role_id`, `roles`.`label` AS `label` FROM `roles` ORDER BY `roles`.`role_id` ASC ;
 
 -- --------------------------------------------------------
 
@@ -2531,7 +2547,7 @@ CREATE OR REPLACE ALGORITHM=UNDEFINED DEFINER=`gumulak_kacper`@`%` SQL SECURITY 
 DROP TABLE IF EXISTS `v_user_IDs`;
 
 DROP VIEW IF EXISTS `v_user_IDs`;
-CREATE OR REPLACE ALGORITHM=UNDEFINED DEFINER=`gumulak_kacper`@`%` SQL SECURITY DEFINER VIEW `v_user_IDs`  AS SELECT `users`.`users_id` AS `users_id`, `users`.`first_name` AS `first_name`, `users`.`last_name` AS `last_name` FROM `users` ;
+CREATE OR REPLACE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `v_user_IDs`  AS SELECT `users`.`users_id` AS `users_id`, `users`.`first_name` AS `first_name`, `users`.`last_name` AS `last_name` FROM `users` ;
 
 --
 -- Constraints for dumped tables
