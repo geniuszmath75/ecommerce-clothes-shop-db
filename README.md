@@ -23,3 +23,18 @@
 - **stock_events:** stock level history logs (using *Event Sourcing*)
 - **users:** in other words: ecommerce shop' workers
 - **vendors:** product manufacturers
+  
+# Procedures:
+- **add_order** add new order with status='placed'
+- **add_product_to_cart:** add new product or modify the existing product's quantity in cart
+- **add_billing_details:** add billing details for customer who doesn't have saved address
+- **add_shipping_details:** add shipping details for customer who doesn't have saved address
+- **add_customer:** add new customer (could return error if function that generate random email create duplicate)
+- **add_user:** similar to add_customer but create new user
+- **delete_product_from_cart** 'delete' product in cart assigned to given customer ID in parameter (updating deleted_at column)
+- **pay_order:** generate transaction ID for selected payment provider, create invoice and invoice lines, update order status to 'paid'
+- **prepare_order_shipment:** generate tracking url for customer and change order status to 'ready_to_ship'
+- **ship_order:** change order status to 'shipped'
+- **return_order:** if order is 'shipped', add stock event 'returned' with the quantity of returned products
+- **cancel_order:** if order has status other than 'shipped', add stock event 'order_cancelled' with the quantity of cancelled products
+- 
